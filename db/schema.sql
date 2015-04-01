@@ -8,13 +8,13 @@ drop table if exists cells;
 create table players(
     id serial primary key,
     name varchar(50) not null,
-    num_torpedoes integer not null,
     games_won integer not null
 );
 
 create table games(
     id serial primary key,
     created_at timestamp not null,
+    num_torpedoes integer not null,
     complete boolean not null,
     completed_at timestamp
 );
