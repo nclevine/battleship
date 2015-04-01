@@ -1,0 +1,28 @@
+Battleship Pseudocode:
+
+Objects:
+
+Ocean:
+-   must have width x height number of cells
+
+Ship:
+-   must have orientation horizontal or vertical
+-   must not intersect with other ships
+-   must be fully on the board (can't be longer than width if horizontal, height if vertical)
+-   must keep track of which occupied cells have been hit
+-   must keep track of whether it is sunk or not
+
+Cell:
+-   must keep track of whether it's been hit
+
+Player/UI:
+-   must have/keep track of number of torpedoes
+-   must be able to choose which cell to target
+-   must be able to see which cells have been hit
+-   must be able to see where they have hit part of a ship
+-   must be able to see their score/remaining ships
+-   must be able to save/quit at any time
+-   must be able to load a previous game or start a new one
+
+Game:
+-   must have information if complete or in progress
