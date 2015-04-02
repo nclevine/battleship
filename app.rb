@@ -9,17 +9,28 @@ require 'pry'
 def display_main_menu
     puts 'Battleship'
     puts '1. Choose Player'
-    puts '2. Create a New Player'
-    puts ''
+    puts '2. New Player'
+    puts '3. Delete Player'
+    puts '4. Exit'
 end
 
-def get_valid_menu_choice(num_choices)
+def get_valid_menu_choice num_choices
   user_input = gets.strip.to_i
   until (1..num_choices).include?(user_input)
-    puts "Select an available option."
+    puts 'Select an available option.'
     user_input = gets.strip.to_i
   end
   return user_input
+end
+
+def display_existing_players
+    if Player.all.any?
+        puts 'Select a player:'
+        Player.all.each_with_index { |player, index| puts "#{index + 1}. " + player }
+    else
+        puts 'There are no existing players.'
+    end
+    puts "#{Player.all.length + 1}. Cancel"
 end
 
 def make_new_player
@@ -32,17 +43,127 @@ def make_new_player
         new_player.name = name
     end
     new_player.save
+    return new_player
 end
 
-def load_existing_player
-    if Player.all.any?
-        puts 'Please select a player:'
-        Player.all.each_with_index { |player, index| puts "#{index + 1}. " + player }
+def display_delete_player_menu
+    puts 'Are you sure you want to delete ' + player_to_delete + '?'
+    puts 'Y / N'
+    user_input = gets.strip.downcase
+    until ['y', 'n'].include?(user_input)
+        puts 'Select \'Y\' or \'N\'.'
+        user_input = gets.strip.downcase
+    end
+    return user_input
+end
+
+def display_games_menu
+    puts 'Welcome ' + player
+    puts '1. New Game'
+    puts '2. Saved Games'
+    puts '3. Completed Games'
+    puts '4. Cancel'
+end
+
+def display_new_game_menu
+    puts 'Choose a difficulty:'
+    puts '1. Baby (Arctic)'
+    puts '2. Easy (Southern)'
+    puts '3. Normal (Indian)'
+    puts '4. Hard (Atlantic)'
+    puts '5. Impossible (Pacific)'
+end
+
+difficulties = {1 => :baby, 2 => :easy, 3 => :normal, 4 => :hard, 5 => :impossible}
+
+def display_saved_games
+    incomplete_games = player.games.where(complete: false)
+    if incomplete_games.any?
+        puts 'Continue Playing:'
+        incomplete_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
     else
-        puts 'There are no existing players.'
+        puts 'No games in progress.'
+    end
+    puts "#{incomplete_games.length + 1}. Cancel"
+    return incomplete_games
+end
+
+def display_completed_games
+    completed_games = player.games.where(complete: true)
+    if completed_games.any?
+        puts 'View Completed Game:'
+        completed_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
+    else
+        puts 'No completed games.'
+    end
+    puts "#{completed_games.length + 1}. Cancel"
+    return completed_games
+end
+
+# begin UI
+system ('clear')
+loop do
+    display_main_menu
+    user_input = get_valid_menu_choice(4)
+    if user_input == 1 # Choose Player
+        display_existing_players
+        user_input = get_valid_menu_choice(Player.all.length + 1)
+        if user_input == Player.all.length + 1
+            break
+        else
+            player = Player.all[user_input - 1]
+            display_games_menu
+            user_input = get_valid_menu_choice(4)
+            if user_input == 1 # New Game
+                display_new_game_menu
+                user_input = get_valid_menu_choice(5)
+                game = player.start_new_single_player_game(difficulties[user_input])
+                game.play
+            elsif user_input == 2 # Load Save Game
+                incomplete_games = display_saved_games
+                user_input = get_valid_menu_choice(incomplete_games.length + 1)
+                if user_input == incomplete_games.length + 1
+                    break
+                else
+                    game = incomplete_games[user_input - 1]
+                    game.play
+                end
+            elsif user_input == 3 # View Past Games
+                completed_games = display_completed_games
+                user_input = get_valid_menu_choice(completed_games.length + 1)
+                if user_input == completed_games.length + 1
+                    break
+                else
+                    game = completed_games[user_input - 1]
+                    game.display_board
+                end
+            else
+                break
+            end
+        end
+    elsif user_input == 2 # New Player
+        new_player = make_new_player
+        puts new_player + ' created!'
+        break
+    elsif user_input == 3 # Delete Player
+        display_existing_players
+        user_input = get_valid_menu_choice(Player.all.length + 1)
+        if user_input == Player.all.length + 1
+            break
+        else 
+            player_to_delete = Player.all[user_input - 1]
+            user_input = display_delete_player_menu
+            if user_input == 'y'
+                puts player_to_delete + ' deleted!'
+                player_to_delete.destroy
+            else
+                break
+            end
+        end
+    else
+        exit
     end
 end
-
 binding.pry
 
 # milton_bradley_ships = {

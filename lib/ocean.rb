@@ -44,7 +44,7 @@ class Ocean < ActiveRecord::Base
         return orientation
     end
 
-    def find_empty_cells_for_ship(ship)
+    def find_empty_cells_for_ship ship
         fully_placed = false
         until fully_placed
             ship_cells = [get_unoccupied_cell]

@@ -4,7 +4,7 @@ class Game < ActiveRecord::Base
 
     def to_str
         if !complete
-            complete_string = "incomplete"
+            complete_string = "#{num_torpedoes} torpedoes left"
         else
             complete_string = "completed #{completed_at.strftime("%D %R")}"
         end
@@ -39,14 +39,14 @@ class Game < ActiveRecord::Base
         arctic: {name: 'Arctic Ocean', width: 6, height: 6}
     }
 
-    def build_ships(difficulty)
+    def build_ships difficulty
         built_ships = []
         ship_names = difficulty_settings[difficulty][:ship_array]
         ship_names.each { |ship_name| built_ships << Ship.new(milton_bradley_ships[ship_name]) }
         return built_ships
     end
 
-    def build_ocean(difficulty)
+    def build_ocean difficulty
         ocean = ocean.create(oceans_of_the_world[difficulty_settings[difficulty][:region]])
         ocean.populate_with_cells
         ocean.ships.create(build_ships(difficulty))
@@ -54,11 +54,46 @@ class Game < ActiveRecord::Base
         num_torpedoes = difficulty_settings[difficulty][torpedoes]
     end
 
-    def fire_torpedo(x_coord, y_coord)
-        target_cell = ocean.cells.where(x_coord: x_coord, y_coord: y_coord).first
+    def play_or_quit
+        puts '(A)im torpedo | (Q)uit'
+        user_input = gets.strip.downcase
+        until ['a', 'q'].include?(user_input)
+            puts 'Select an available option.'
+            user_input = gets.strip.downcase
+        end
+        return user_input
+    end
+
+    def fire_torpedo target_cell
         target_cell.hit = true
+        target_cell.save
         num_torpedoes -= 1
+        self.save
         return target_cell.ship_id != nil
+    end
+
+    def aim_and_fire_torpedo
+        hit_a_cell = false
+        until hit_a_cell
+            puts 'Aim torpedo at which cell? (format "row#,column#")'
+            user_input = gets.strip
+            until user_input.include?(',')
+                puts 'Enter the coordinates in the proper format.'
+                user_input = gets.strip
+            end
+            coords = user_input.split(',').map(&:to_i)
+            target_cell = ocean.cells.where(x_coord: coords.first, y_coord: coords.last).first
+            if target_cell == nil
+                puts 'Invalid coordinates. Re-enter.'
+            elsif target_cell.hit
+                puts 'You have already hit that sector. Re-enter.'
+            else
+                hit_ship = fire_torpedo(target_cell)
+                puts "You shot (#{coords.first}, #{coords.last})..."
+                hit_ship ? puts 'You hit a ship!' : puts 'sploosh.'
+                hit_a_cell = true
+            end
+        end
     end
 
     def update_number_of_ships_sunk
@@ -72,12 +107,14 @@ class Game < ActiveRecord::Base
             complete = true
             completed_at = Time.now
         end
+        self.save
         return complete
     end
 
     def check_if_player_won
         if update_number_of_ships_sunk == ocean.ships.length
             player.games_won += 1
+            player.save
             return true
         else
             return false
@@ -86,5 +123,15 @@ class Game < ActiveRecord::Base
 
     def display_board
         puts ocean
+    end
+
+    def play
+        until complete
+            display_board
+            user_input = play_or_quit
+            user_input == 'a' ? aim_and_fire_torpedo : break
+            check_if_game_completed
+        end
+        return complete
     end
 end

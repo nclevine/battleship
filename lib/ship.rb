@@ -10,7 +10,7 @@ class Ship < ActiveRecord::Base
         to_str
     end
 
-    def insert_into_empty_cells(empty_cells)
+    def insert_into_empty_cells empty_cells
         empty_cells.each do |cell| 
             cell.ship = self
             cell.save
@@ -21,6 +21,7 @@ class Ship < ActiveRecord::Base
         hit_cells = 0
         cells.each { |cell| hit_cells += 1 if cell.hit }
         sunk = true if hit_cells == self.length
+        self.save
         return sunk
     end
 end
