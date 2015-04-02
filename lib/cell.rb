@@ -4,10 +4,10 @@ class Cell < ActiveRecord::Base
 
     def to_str
         if hit
-            if ship_id != nil
-                '='
+            if ship != nil
+                '#'
             else
-                'x'
+                'o'
             end
         else
             '.'

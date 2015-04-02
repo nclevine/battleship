@@ -119,6 +119,7 @@ loop do
                 user_input = get_valid_menu_choice(5)
                 game = player.start_new_single_player_game(difficulties[user_input])
                 game.play
+                game.results
             elsif user_input == 2 # Load Save Game
                 incomplete_games = display_saved_games
                 user_input = get_valid_menu_choice(incomplete_games.length + 1)
@@ -127,6 +128,7 @@ loop do
                 else
                     game = incomplete_games[user_input - 1]
                     game.play
+                    game.results
                 end
             elsif user_input == 3 # View Past Games
                 completed_games = display_completed_games
@@ -164,7 +166,8 @@ loop do
         exit
     end
 end
-binding.pry
+
+# binding.pry
 
 # milton_bradley_ships = {
 #     aircraft_carrier: {name: 'aircraft carrier', length: 5, sunk: false},

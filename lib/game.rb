@@ -134,4 +134,12 @@ class Game < ActiveRecord::Base
         end
         return complete
     end
+
+    def results
+        if complete
+            check_if_player_won ? puts 'You won!' : puts 'You lost.'
+        else
+            puts 'You quit the game'
+        end
+    end
 end
