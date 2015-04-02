@@ -11,10 +11,9 @@ class Ocean < ActiveRecord::Base
             else
                 x_axis += "#{x_coord + 1}"
             end
-            x_axis += "\n"
         end
-        horizontal_border = '  ' + (' _' * width) + " \n"
-        complete_ocean = x_axis + horizontal_border
+        horizontal_border = '  ' + (' –' * width) + " \n"
+        complete_ocean = x_axis + "\n" + horizontal_border
         height.times do |y_coord|
             current_row = ''
             if (y_coord + 1) < 10

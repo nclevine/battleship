@@ -62,7 +62,7 @@ class Game < ActiveRecord::Base
             ship.save
         end
         new_ocean.arrange_ships
-        num_torpedoes = DIFFICULTY_SETTINGS[difficulty][:torpedoes]
+        self.num_torpedoes = DIFFICULTY_SETTINGS[difficulty][:torpedoes]
         self.save
     end
 
