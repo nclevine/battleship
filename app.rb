@@ -1,10 +1,49 @@
 require_relative 'db/connection'
+require_relative 'lib/cell'
+require_relative 'lib/ship'
+require_relative 'lib/ocean'
 require_relative 'lib/game'
 require_relative 'lib/player'
-require_relative 'lib/ocean'
-require_relative 'lib/ship'
-require_relative 'lib/cell'
 require 'pry'
+
+def display_main_menu
+    puts 'Battleship'
+    puts '1. Choose Player'
+    puts '2. Create a New Player'
+    puts ''
+end
+
+def get_valid_menu_choice(num_choices)
+  user_input = gets.strip.to_i
+  until (1..num_choices).include?(user_input)
+    puts "Select an available option."
+    user_input = gets.strip.to_i
+  end
+  return user_input
+end
+
+def make_new_player
+    puts 'What is your name?'
+    name = gets.strip
+    new_player = Player.new(name: name, games_won: 0)
+    until new_player.valid?
+        puts 'Enter a name at least two letters long.'
+        name = gets.strip
+        new_player.name = name
+    end
+    new_player.save
+end
+
+def load_existing_player
+    if Player.all.any?
+        puts 'Please select a player:'
+        Player.all.each_with_index { |player, index| puts "#{index + 1}. " + player }
+    else
+        puts 'There are no existing players.'
+    end
+end
+
+binding.pry
 
 # milton_bradley_ships = {
 #     aircraft_carrier: {name: 'aircraft carrier', length: 5, sunk: false},
@@ -96,35 +135,8 @@ require 'pry'
 #     end
 # end
 
-def get_valid_menu_choice(num_choices)
-  user_input = gets.strip.to_i
-  until (1..num_choices).include?(user_input)
-    puts "Select an available option."
-    user_input = gets.strip.to_i
-  end
-  return user_input
-end
 
-def make_new_player
-    puts 'What is your name?'
-    name = gets.strip
-    new_player = Player.new(name: name, num_torpedoes: 0, games_won: 0)
-    until new_player.valid?
-        puts 'Enter a name at least two letters long.'
-        name = gets.strip
-        new_player.name = name
-    end
-    new_player.save
-end
 
-def load_existing_player
-    if Player.all.any?
-        puts 'Please select a player:'
-        Player.all.each_with_index { |player, index| puts "#{index + 1}. " + player }
-    else
-        puts 'There are no existing players.'
-    end
-end
 
 # def build_ships_by_difficulty(difficulty)
 #     built_ships = []
@@ -155,18 +167,16 @@ end
     
 # end
 
-pacific = Ocean.new(oceans_of_the_world[:pacific])
-pacific.game_id = 1
-pacific.save
-populate_ocean_with_cells(pacific)
-pacific.ships.create([
-    milton_bradley_ships[:aircraft_carrier],
-    milton_bradley_ships[:battleship],
-    milton_bradley_ships[:submarine],
-    milton_bradley_ships[:cruiser],
-    milton_bradley_ships[:destroyer],
-    milton_bradley_ships[:aircraft_carrier]
-])
-place_ships_in_ocean(pacific)
-
-binding.pry
+# pacific = Ocean.new(oceans_of_the_world[:pacific])
+# pacific.game_id = 1
+# pacific.save
+# populate_ocean_with_cells(pacific)
+# pacific.ships.create([
+#     milton_bradley_ships[:aircraft_carrier],
+#     milton_bradley_ships[:battleship],
+#     milton_bradley_ships[:submarine],
+#     milton_bradley_ships[:cruiser],
+#     milton_bradley_ships[:destroyer],
+#     milton_bradley_ships[:aircraft_carrier]
+# ])
+# place_ships_in_ocean(pacific)

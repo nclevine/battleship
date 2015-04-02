@@ -2,6 +2,19 @@ class Game < ActiveRecord::Base
     has_and_belongs_to_many :players
     has_one :ocean
 
+    def to_str
+        if !complete
+            complete_string = "incomplete"
+        else
+            complete_string = "completed #{completed_at.strftime("%D %R")}"
+        end
+        "Game ##{id}, #{ocean.name}, begun #{created_at.strftime("%D %R")}, #{complete_string}"
+    end
+
+    def to_s
+        to_str
+    end
+
     difficulty_settings = {
         impossible: {region: :pacific, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
         hard: {region: :atlantic, torpedoes: 41, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
@@ -38,5 +51,40 @@ class Game < ActiveRecord::Base
         ocean.populate_with_cells
         ocean.ships.create(build_ships(difficulty))
         ocean.arrange_ships
+        num_torpedoes = difficulty_settings[difficulty][torpedoes]
+    end
+
+    def fire_torpedo(x_coord, y_coord)
+        target_cell = ocean.cells.where(x_coord: x_coord, y_coord: y_coord).first
+        target_cell.hit = true
+        num_torpedoes -= 1
+        return target_cell.ship_id != nil
+    end
+
+    def update_number_of_ships_sunk
+        sunk_ships = 0
+        ocean.ships.each { |ship| sunk_ships += 1 if ship.determine_if_sunk }
+        return sunk_ships
+    end
+
+    def check_if_game_completed
+        if num_torpedoes == 0 || update_number_of_ships_sunk == ocean.ships.length
+            complete = true
+            completed_at = Time.now
+        end
+        return complete
+    end
+
+    def check_if_player_won
+        if update_number_of_ships_sunk == ocean.ships.length
+            player.games_won += 1
+            return true
+        else
+            return false
+        end
+    end
+
+    def display_board
+        puts ocean
     end
 end

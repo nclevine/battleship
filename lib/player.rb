@@ -11,11 +11,11 @@ class Player < ActiveRecord::Base
     end
 
     def start_new_single_player_game(difficulty)
-        new_game = games.create(complete: false)
+        new_game = games.create(num_torpedoes: 0, complete: false)
         new_game.build_ocean(difficulty)
     end
 
-    def load_single_player_game(game_id)
-        games.all[game_id]
-    end
+    # def load_single_player_game(game)
+    #     return game
+    # end
 end
