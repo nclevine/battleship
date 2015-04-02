@@ -23,10 +23,11 @@ class Ocean < ActiveRecord::Base
                 current_row += "#{y_coord + 1} |"
             end
             width.times do |x_coord|
-                current_row += cells.where(x_coord: x_coord + 1, y_coord: y_coord + 1).first + "|\n"
+                current_row += cells.where(x_coord: x_coord + 1, y_coord: y_coord + 1).first.to_s + "|"
             end
-            complete_ocean += current_row + horizontal_border
+            complete_ocean += current_row + "\n" + horizontal_border
         end
+        return complete_ocean
     end
 
     def to_s
@@ -72,8 +73,9 @@ class Ocean < ActiveRecord::Base
             ship_cells = [get_unoccupied_cell]
             orientation = get_ship_orientation
             (ship.length - 1).times do |ship_cells_index|
+                break if ship_cells_index >= ship_cells.length
                 next_cell = orientation.call(ship_cells[ship_cells_index])
-                next_cell ? (ship_cells << next_cell if next_cell.ship == nil) : break
+                ship_cells << next_cell if (next_cell && next_cell.ship == nil)
             end
             fully_placed = true if ship_cells.length == ship.length
         end

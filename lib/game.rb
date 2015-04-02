@@ -1,3 +1,5 @@
+require_relative 'constants'
+
 class Game < ActiveRecord::Base
     has_and_belongs_to_many :players
     has_one :ocean
@@ -15,43 +17,53 @@ class Game < ActiveRecord::Base
         to_str
     end
 
-    difficulty_settings = {
-        impossible: {region: :pacific, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
-        hard: {region: :atlantic, torpedoes: 41, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
-        normal: {region: :indian, torpedoes: 30, ship_array: [:aircraft_carrier, :battleship, :submarine, :cruiser, :cruiser, :destroyer]},
-        easy: {region: :southern, torpedoes: 21, ship_array: [:battleship, :submarine, :cruiser, :destroyer]},
-        baby: {region: :arctic, torpedoes: 17, ship_array: [:aircraft_carrier, :aircraft_carrier]}
-    }
+    # DIFFICULTY_SETTINGS = {
+    #     impossible: {region: :pacific, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
+    #     hard: {region: :atlantic, torpedoes: 41, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
+    #     normal: {region: :indian, torpedoes: 30, ship_array: [:aircraft_carrier, :battleship, :submarine, :cruiser, :cruiser, :destroyer]},
+    #     easy: {region: :southern, torpedoes: 21, ship_array: [:battleship, :submarine, :cruiser, :destroyer]},
+    #     baby: {region: :arctic, torpedoes: 17, ship_array: [:aircraft_carrier, :aircraft_carrier]}
+    # }
 
-    milton_bradley_ships = {
-        aircraft_carrier: {name: 'aircraft carrier', length: 5, sunk: false},
-        battleship: {name: 'battleship', length: 4, sunk: false},
-        submarine: {name: 'submarine', length: 3, sunk: false},
-        cruiser: {name: 'cruiser', length: 3, sunk: false},
-        destroyer: {name: 'destroyer', length: 2, sunk: false}
-    }
+    # MILTON_BRADLEY_SHIPS = {
+    #     aircraft_carrier: {name: 'aircraft carrier', length: 5, sunk: false},
+    #     battleship: {name: 'battleship', length: 4, sunk: false},
+    #     submarine: {name: 'submarine', length: 3, sunk: false},
+    #     cruiser: {name: 'cruiser', length: 3, sunk: false},
+    #     destroyer: {name: 'destroyer', length: 2, sunk: false}
+    # }
 
-    oceans_of_the_world = {
-        pacific: {name: 'Pacific Ocean', width: 15, height: 15},
-        atlantic: {name: 'Atlantic Ocean', width: 13, height: 12},
-        indian: {name: 'Indian Ocean', width: 10, height: 10},
-        southern: {name: 'Southern Ocean', width: 8, height: 7},
-        arctic: {name: 'Arctic Ocean', width: 6, height: 6}
-    }
+    # OCEANS_OF_THE_WORLD = {
+    #     pacific: {name: 'Pacific Ocean', width: 15, height: 15},
+    #     atlantic: {name: 'Atlantic Ocean', width: 13, height: 12},
+    #     indian: {name: 'Indian Ocean', width: 10, height: 10},
+    #     southern: {name: 'Southern Ocean', width: 8, height: 7},
+    #     arctic: {name: 'Arctic Ocean', width: 6, height: 6}
+    # }
 
     def build_ships difficulty
         built_ships = []
-        ship_names = difficulty_settings[difficulty][:ship_array]
-        ship_names.each { |ship_name| built_ships << Ship.new(milton_bradley_ships[ship_name]) }
+        ship_names = DIFFICULTY_SETTINGS[difficulty][:ship_array]
+        ship_attrs = []
+        ship_names.each { |ship_name| ship_attrs << MILTON_BRADLEY_SHIPS[ship_name] }
+        ship_attrs.each { |ship_attr| built_ships << Ship.new(ship_attr) }
         return built_ships
     end
 
     def build_ocean difficulty
-        ocean = ocean.create(oceans_of_the_world[difficulty_settings[difficulty][:region]])
-        ocean.populate_with_cells
-        ocean.ships.create(build_ships(difficulty))
-        ocean.arrange_ships
-        num_torpedoes = difficulty_settings[difficulty][torpedoes]
+        ocean_attrs = OCEANS_OF_THE_WORLD[DIFFICULTY_SETTINGS[difficulty][:region]]
+        new_ocean = Ocean.new(ocean_attrs)
+        new_ocean.game = self
+        new_ocean.save
+        new_ocean.populate_with_cells
+        built_ships = build_ships(difficulty)
+        built_ships.each do |ship|
+            ship.ocean = new_ocean
+            ship.save
+        end
+        new_ocean.arrange_ships
+        num_torpedoes = DIFFICULTY_SETTINGS[difficulty][:torpedoes]
+        self.save
     end
 
     def play_or_quit
@@ -67,7 +79,7 @@ class Game < ActiveRecord::Base
     def fire_torpedo target_cell
         target_cell.hit = true
         target_cell.save
-        num_torpedoes -= 1
+        self.num_torpedoes -= 1
         self.save
         return target_cell.ship_id != nil
     end
@@ -90,7 +102,7 @@ class Game < ActiveRecord::Base
             else
                 hit_ship = fire_torpedo(target_cell)
                 puts "You shot (#{coords.first}, #{coords.last})..."
-                hit_ship ? puts 'You hit a ship!' : puts 'sploosh.'
+                hit_ship ? puts('You hit a ship!') : puts('sploosh.')
                 hit_a_cell = true
             end
         end
@@ -122,7 +134,7 @@ class Game < ActiveRecord::Base
     end
 
     def display_board
-        puts ocean
+        puts ocean.to_s
     end
 
     def play
@@ -137,7 +149,7 @@ class Game < ActiveRecord::Base
 
     def results
         if complete
-            check_if_player_won ? puts 'You won!' : puts 'You lost.'
+            check_if_player_won ? puts('You won!') : puts('You lost.')
         else
             puts 'You quit the game'
         end

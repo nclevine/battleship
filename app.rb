@@ -2,6 +2,7 @@ require_relative 'db/connection'
 require_relative 'lib/cell'
 require_relative 'lib/ship'
 require_relative 'lib/ocean'
+require_relative 'lib/constants'
 require_relative 'lib/game'
 require_relative 'lib/player'
 require 'pry'
@@ -46,24 +47,24 @@ def make_new_player
     return new_player
 end
 
-def display_delete_player_menu
-    puts 'Are you sure you want to delete ' + player_to_delete + '?'
-    puts 'Y / N'
-    user_input = gets.strip.downcase
-    until ['y', 'n'].include?(user_input)
-        puts 'Select \'Y\' or \'N\'.'
-        user_input = gets.strip.downcase
-    end
-    return user_input
-end
+# def display_delete_player_menu
+#     puts 'Are you sure you want to delete ' + player_to_delete + '?'
+#     puts 'Y / N'
+#     user_input = gets.strip.downcase
+#     until ['y', 'n'].include?(user_input)
+#         puts 'Select \'Y\' or \'N\'.'
+#         user_input = gets.strip.downcase
+#     end
+#     return user_input
+# end
 
-def display_games_menu
-    puts 'Welcome ' + player
-    puts '1. New Game'
-    puts '2. Saved Games'
-    puts '3. Completed Games'
-    puts '4. Cancel'
-end
+# def display_games_menu
+#     puts 'Welcome ' + player
+#     puts '1. New Game'
+#     puts '2. Saved Games'
+#     puts '3. Completed Games'
+#     puts '4. Cancel'
+# end
 
 def display_new_game_menu
     puts 'Choose a difficulty:'
@@ -76,29 +77,29 @@ end
 
 difficulties = {1 => :baby, 2 => :easy, 3 => :normal, 4 => :hard, 5 => :impossible}
 
-def display_saved_games
-    incomplete_games = player.games.where(complete: false)
-    if incomplete_games.any?
-        puts 'Continue Playing:'
-        incomplete_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
-    else
-        puts 'No games in progress.'
-    end
-    puts "#{incomplete_games.length + 1}. Cancel"
-    return incomplete_games
-end
+# def display_saved_games
+#     incomplete_games = player.games.where(complete: false)
+#     if incomplete_games.any?
+#         puts 'Continue Playing:'
+#         incomplete_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
+#     else
+#         puts 'No games in progress.'
+#     end
+#     puts "#{incomplete_games.length + 1}. Cancel"
+#     return incomplete_games
+# end
 
-def display_completed_games
-    completed_games = player.games.where(complete: true)
-    if completed_games.any?
-        puts 'View Completed Game:'
-        completed_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
-    else
-        puts 'No completed games.'
-    end
-    puts "#{completed_games.length + 1}. Cancel"
-    return completed_games
-end
+# def display_completed_games
+#     completed_games = player.games.where(complete: true)
+#     if completed_games.any?
+#         puts 'View Completed Game:'
+#         completed_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
+#     else
+#         puts 'No completed games.'
+#     end
+#     puts "#{completed_games.length + 1}. Cancel"
+#     return completed_games
+# end
 
 # begin UI
 system ('clear')
@@ -108,11 +109,12 @@ loop do
     if user_input == 1 # Choose Player
         display_existing_players
         user_input = get_valid_menu_choice(Player.all.length + 1)
-        if user_input == Player.all.length + 1
-            break
-        else
+        # if user_input == Player.all.length + 1
+        #     break
+        # else
+        if (1..Player.all.length).include?(user_input)
             player = Player.all[user_input - 1]
-            display_games_menu
+            player.display_games_menu
             user_input = get_valid_menu_choice(4)
             if user_input == 1 # New Game
                 display_new_game_menu
@@ -121,45 +123,47 @@ loop do
                 game.play
                 game.results
             elsif user_input == 2 # Load Save Game
-                incomplete_games = display_saved_games
+                incomplete_games = player.display_saved_games
                 user_input = get_valid_menu_choice(incomplete_games.length + 1)
-                if user_input == incomplete_games.length + 1
-                    break
-                else
+                # if user_input == incomplete_games.length + 1
+                #     break
+                # else
+                if (1..incomplete_games.length).include?(user_input)
                     game = incomplete_games[user_input - 1]
                     game.play
                     game.results
                 end
             elsif user_input == 3 # View Past Games
-                completed_games = display_completed_games
+                completed_games = player.display_completed_games
                 user_input = get_valid_menu_choice(completed_games.length + 1)
-                if user_input == completed_games.length + 1
-                    break
-                else
+                # if user_input == completed_games.length + 1
+                #     break
+                # else
+                if (1..completed_games.length).include?(user_input)
                     game = completed_games[user_input - 1]
                     game.display_board
                 end
-            else
-                break
+            # else
+            #     break
             end
         end
     elsif user_input == 2 # New Player
         new_player = make_new_player
-        puts new_player + ' created!'
-        break
+        puts("#{new_player} created!")
     elsif user_input == 3 # Delete Player
         display_existing_players
         user_input = get_valid_menu_choice(Player.all.length + 1)
-        if user_input == Player.all.length + 1
-            break
-        else 
+        # if user_input == Player.all.length + 1
+        #     break
+        # else 
+        if (1..Player.all.length).include?(user_input)
             player_to_delete = Player.all[user_input - 1]
-            user_input = display_delete_player_menu
+            user_input = player_to_delete.display_delete_player_menu
             if user_input == 'y'
-                puts player_to_delete + ' deleted!'
+                puts("#{player_to_delete} deleted!")
                 player_to_delete.destroy
-            else
-                break
+            # else
+            #     break
             end
         end
     else
