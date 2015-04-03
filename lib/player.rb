@@ -19,34 +19,44 @@ class Player < ActiveRecord::Base
     end
 
     def display_games_menu
-        puts 'Welcome ' + self
-        puts '1. New Game'
-        puts '2. Saved Games'
-        puts '3. Completed Games'
-        puts '4. Cancel'
+        puts LOGO
+        puts MENU_BORDER
+        puts ("|      Welcome   #{self}".ljust(29) + '|').center(60, ' ')
+        puts '|      1. New Game           |'.center(60, ' ')
+        puts '|      2. Saved Games        |'.center(60, ' ')
+        puts '|      3. Completed Games    |'.center(60, ' ')
+        puts '|      4. Cancel             |'.center(60, ' ')
+        puts MENU_BORDER
     end
 
     def display_saved_games
         incomplete_games = games.where(complete: false)
+        puts LOGO
+        puts MENU_BORDER
         if incomplete_games.any?
-            puts 'Continue Playing:'
-            incomplete_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
+            puts '|      Continue Playing:     |'.center(60, ' ')
+            incomplete_games.each_with_index { |game, index| puts ("| #{index + 1}. #{game}".ljust(29) + '|').center(60, ' ') }
         else
-            puts 'No games in progress.'
+            puts ('|' + 'No games in progress.'.center(28, ' ') + '|').center(60, ' ')
         end
-        puts "#{incomplete_games.length + 1}. Cancel"
+        puts ("| #{incomplete_games.length + 1}. Cancel".ljust(29) + '|').center(60, ' ')
+        puts MENU_BORDER
         return incomplete_games
     end
 
     def display_completed_games
         completed_games = games.where(complete: true)
+        puts LOGO
+        puts MENU_BORDER
         if completed_games.any?
-            puts 'View Completed Game:'
-            completed_games.each_with_index { |game, index| puts "#{index + 1}. " + game }
+            puts '|    View Completed Game:    |'.center(60, ' ')
+            completed_games.each_with_index { |game, index| puts ("| #{index + 1}. #{game}".ljust(29) + '|').center(60, ' ') }
         else
-            puts 'No completed games.'
+            puts ('|' + 'No completed games.'.center(28, ' ') + '|').center(60, ' ')
         end
-        puts "#{completed_games.length + 1}. Cancel"
+        puts ("| #{completed_games.length + 1}. Cancel".ljust(29) + '|').center(60, ' ')
+        puts ('|' + "#{games_won} games won  |".rjust(29)).center(60, ' ')
+        puts MENU_BORDER
         return completed_games
     end
 

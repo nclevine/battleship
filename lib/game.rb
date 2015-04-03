@@ -6,40 +6,15 @@ class Game < ActiveRecord::Base
 
     def to_str
         if !complete
-            complete_string = "#{num_torpedoes} torpedoes left"
+            "#{num_torpedoes} turns left, #{created_at.strftime("%D")}"
         else
-            complete_string = "completed #{completed_at.strftime("%D %R")}"
+            "#{ocean.name}, #{completed_at.strftime("%D")}"
         end
-        "Game ##{id}, #{ocean.name}, begun #{created_at.strftime("%D %R")}, #{complete_string}"
     end
 
     def to_s
         to_str
     end
-
-    # DIFFICULTY_SETTINGS = {
-    #     impossible: {region: :pacific, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
-    #     hard: {region: :atlantic, torpedoes: 41, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
-    #     normal: {region: :indian, torpedoes: 30, ship_array: [:aircraft_carrier, :battleship, :submarine, :cruiser, :cruiser, :destroyer]},
-    #     easy: {region: :southern, torpedoes: 21, ship_array: [:battleship, :submarine, :cruiser, :destroyer]},
-    #     baby: {region: :arctic, torpedoes: 17, ship_array: [:aircraft_carrier, :aircraft_carrier]}
-    # }
-
-    # MILTON_BRADLEY_SHIPS = {
-    #     aircraft_carrier: {name: 'aircraft carrier', length: 5, sunk: false},
-    #     battleship: {name: 'battleship', length: 4, sunk: false},
-    #     submarine: {name: 'submarine', length: 3, sunk: false},
-    #     cruiser: {name: 'cruiser', length: 3, sunk: false},
-    #     destroyer: {name: 'destroyer', length: 2, sunk: false}
-    # }
-
-    # OCEANS_OF_THE_WORLD = {
-    #     pacific: {name: 'Pacific Ocean', width: 15, height: 15},
-    #     atlantic: {name: 'Atlantic Ocean', width: 13, height: 12},
-    #     indian: {name: 'Indian Ocean', width: 10, height: 10},
-    #     southern: {name: 'Southern Ocean', width: 8, height: 7},
-    #     arctic: {name: 'Arctic Ocean', width: 6, height: 6}
-    # }
 
     def build_ships difficulty
         built_ships = []
@@ -81,7 +56,7 @@ class Game < ActiveRecord::Base
         target_cell.save
         self.num_torpedoes -= 1
         self.save
-        return target_cell.ship_id != nil
+        return target_cell.ship
     end
 
     def aim_and_fire_torpedo
@@ -101,13 +76,18 @@ class Game < ActiveRecord::Base
                 puts 'You have already hit that sector. Re-enter.'
             else
                 hit_ship = fire_torpedo(target_cell)
-                # puts "You shot (#{coords.first}, #{coords.last})..."
-                # hit_ship ? puts('You hit a ship!') : puts('sploosh.')
                 hit_a_cell = true
             end
         end
         result_string = "You shot (#{coords.first}, #{coords.last})...\n"
-        hit_ship ? (result_string += 'You hit a ship!') : (result_string += 'sploosh.')
+        if hit_ship
+            result_string += 'You hit a ship!'
+            update_ships_sunk_status
+            result_string += "\nThe ship sunk!!" if hit_ship.sunk
+        else
+            result_string += 'sploosh.'
+        end
+
         result_string += "\n#{self.num_torpedoes} torpedoes left"
         return result_string
     end
@@ -131,8 +111,8 @@ class Game < ActiveRecord::Base
     def check_if_player_won
         sunk_ships = update_ships_sunk_status
         if sunk_ships == ocean.ships.length
-            player.games_won += 1
-            player.save
+            player_wins = players.first.games_won + 1
+            players.first.update(games_won: player_wins)
             return true
         else
             return false
@@ -140,29 +120,29 @@ class Game < ActiveRecord::Base
     end
 
     def display_board
+        system ('clear')
         puts ocean.to_s
     end
 
     def results
         if complete
-            check_if_player_won ? puts('You won!') : puts('You ran out of torpedoes and lost.')
-        else
-            puts 'You quit the game'
+            check_if_player_won ? puts('YOU WON!') : puts('GAME OVER')
+            puts "\nPress any key to continue."
+            gets
         end
     end
 
     def play
         result_of_turn = "#{self.num_torpedoes} torpedoes left"
         until self.complete
-            system ('clear')
             display_board
             puts result_of_turn
             user_input = play_or_quit
             user_input == 'a' ? (result_of_turn = aim_and_fire_torpedo) : break
             update_completed_status
         end
+        display_board
         results
         return complete
     end
-
 end
