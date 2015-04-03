@@ -4,25 +4,25 @@ class Ocean < ActiveRecord::Base
     belongs_to :game
 
     def to_str
-        x_axis = '   '
+        x_axis = '     '
         width.times do |x_coord|
             if (x_coord + 1) < 10
-                x_axis += " #{x_coord + 1}"
+                x_axis += "  #{x_coord + 1} "
             else
-                x_axis += "#{x_coord + 1}"
+                x_axis += " #{x_coord + 1} "
             end
         end
-        horizontal_border = '    ' + ('– ' * width) + " \n"
+        horizontal_border = '    +' + ('---+' * width) + " \n"
         complete_ocean = x_axis + "\n" + horizontal_border
         height.times do |y_coord|
             current_row = ''
             if (y_coord + 1) < 10
-                current_row += " #{y_coord + 1} |"
+                current_row += " #{y_coord + 1}  | "
             else
-                current_row += "#{y_coord + 1} |"
+                current_row += "#{y_coord + 1}  | "
             end
             width.times do |x_coord|
-                current_row += cells.where(x_coord: x_coord + 1, y_coord: y_coord + 1).first.to_s + "|"
+                current_row += cells.where(x_coord: x_coord + 1, y_coord: y_coord + 1).first.to_s + ' | '
             end
             complete_ocean += current_row + "\n" + horizontal_border
         end
