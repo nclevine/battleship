@@ -5,11 +5,6 @@ require_relative 'lib/ocean'
 require_relative 'lib/constants'
 require_relative 'lib/game'
 require_relative 'lib/player'
-require 'pry'
-
-# def MENU_BORDER
-#     '------------------------------'.center(60, ' ')
-# end
 
 def display_main_menu
     puts LOGO
@@ -39,7 +34,11 @@ def display_existing_players
     else
         puts '|    No existing players.    |'.center(60, ' ')
     end
-    puts "|      #{Player.all.length + 1}. Cancel             |".center(60, ' ')
+    if Player.all.length < 9
+        puts "|      #{Player.all.length + 1}. Cancel             |".center(60, ' ')
+    else
+        puts "|      #{Player.all.length + 1}. Cancel            |".center(60, ' ')
+    end
     puts MENU_BORDER
 end
 

@@ -83,7 +83,7 @@ class Game < ActiveRecord::Base
         if hit_ship
             result_string += 'You hit a ship!'
             update_ships_sunk_status
-            result_string += "\nThe ship sunk!!" if hit_ship.sunk
+            result_string += "\nThe ship sunk!!" if hit_ship.reload.sunk
         else
             result_string += 'sploosh.'
         end
@@ -121,7 +121,7 @@ class Game < ActiveRecord::Base
 
     def display_board
         system ('clear')
-        puts ocean.to_s
+        puts ocean
     end
 
     def results
