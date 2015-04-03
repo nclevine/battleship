@@ -17,11 +17,9 @@ class Ship < ActiveRecord::Base
         end
     end
 
-    def determine_if_sunk
-        hit_cells = 0
-        cells.each { |cell| hit_cells += 1 if cell.hit }
-        sunk = true if hit_cells == self.length
-        self.save
+    def update_sunk_status
+        hit_cells = cells.where(hit: true)
+        self.update(sunk: true) if hit_cells.length == self.length
         return sunk
     end
 end

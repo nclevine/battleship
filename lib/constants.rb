@@ -1,11 +1,11 @@
 # require 'pry'
 
 DIFFICULTY_SETTINGS = {
-    impossible: {region: :pacific, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
-    hard: {region: :atlantic, torpedoes: 41, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
-    normal: {region: :indian, torpedoes: 30, ship_array: [:aircraft_carrier, :battleship, :submarine, :cruiser, :cruiser, :destroyer]},
-    easy: {region: :southern, torpedoes: 21, ship_array: [:battleship, :submarine, :cruiser, :destroyer]},
-    baby: {region: :arctic, torpedoes: 17, ship_array: [:aircraft_carrier, :aircraft_carrier]}
+    impossible: {region: :pacific, torpedoes: 70, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
+    hard: {region: :atlantic, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
+    normal: {region: :indian, torpedoes: 41, ship_array: [:aircraft_carrier, :battleship, :submarine, :cruiser, :cruiser, :destroyer]},
+    easy: {region: :southern, torpedoes: 30, ship_array: [:battleship, :submarine, :cruiser, :destroyer]},
+    baby: {region: :arctic, torpedoes: 21, ship_array: [:aircraft_carrier, :aircraft_carrier]}
 }
 
 MILTON_BRADLEY_SHIPS = {

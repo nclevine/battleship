@@ -4,7 +4,7 @@ class Ocean < ActiveRecord::Base
     belongs_to :game
 
     def to_str
-        x_axis = ''
+        x_axis = '   '
         width.times do |x_coord|
             if (x_coord + 1) < 10
                 x_axis += " #{x_coord + 1}"
@@ -12,7 +12,7 @@ class Ocean < ActiveRecord::Base
                 x_axis += "#{x_coord + 1}"
             end
         end
-        horizontal_border = '  ' + (' –' * width) + " \n"
+        horizontal_border = '    ' + ('– ' * width) + " \n"
         complete_ocean = x_axis + "\n" + horizontal_border
         height.times do |y_coord|
             current_row = ''

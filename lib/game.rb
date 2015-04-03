@@ -87,7 +87,7 @@ class Game < ActiveRecord::Base
     def aim_and_fire_torpedo
         hit_a_cell = false
         until hit_a_cell
-            puts 'Aim torpedo at which cell? (format "row#,column#")'
+            puts 'Aim torpedo at which cell? (format "column#,row#")'
             user_input = gets.strip
             until user_input.include?(',')
                 puts 'Enter the coordinates in the proper format.'
@@ -101,30 +101,36 @@ class Game < ActiveRecord::Base
                 puts 'You have already hit that sector. Re-enter.'
             else
                 hit_ship = fire_torpedo(target_cell)
-                puts "You shot (#{coords.first}, #{coords.last})..."
-                hit_ship ? puts('You hit a ship!') : puts('sploosh.')
+                # puts "You shot (#{coords.first}, #{coords.last})..."
+                # hit_ship ? puts('You hit a ship!') : puts('sploosh.')
                 hit_a_cell = true
             end
         end
+        result_string = "You shot (#{coords.first}, #{coords.last})...\n"
+        hit_ship ? (result_string += 'You hit a ship!') : (result_string += 'sploosh.')
+        result_string += "\n#{self.num_torpedoes} torpedoes left"
+        return result_string
     end
 
-    def update_number_of_ships_sunk
-        sunk_ships = 0
-        ocean.ships.each { |ship| sunk_ships += 1 if ship.determine_if_sunk }
-        return sunk_ships
+    def update_ships_sunk_status
+        ocean.ships.each { |ship| ship.update_sunk_status }
+        sunk_ships = ocean.ships.where(sunk: true)
+        return sunk_ships.length
     end
 
-    def check_if_game_completed
-        if num_torpedoes == 0 || update_number_of_ships_sunk == ocean.ships.length
-            complete = true
-            completed_at = Time.now
+    def update_completed_status
+        sunk_ships = update_ships_sunk_status
+        if self.num_torpedoes == 0 || sunk_ships == ocean.ships.length
+            self.update(complete: true)
+            self.completed_at = Time.now
         end
         self.save
         return complete
     end
 
     def check_if_player_won
-        if update_number_of_ships_sunk == ocean.ships.length
+        sunk_ships = update_ships_sunk_status
+        if sunk_ships == ocean.ships.length
             player.games_won += 1
             player.save
             return true
@@ -137,21 +143,26 @@ class Game < ActiveRecord::Base
         puts ocean.to_s
     end
 
-    def play
-        until complete
-            display_board
-            user_input = play_or_quit
-            user_input == 'a' ? aim_and_fire_torpedo : break
-            check_if_game_completed
-        end
-        return complete
-    end
-
     def results
         if complete
-            check_if_player_won ? puts('You won!') : puts('You lost.')
+            check_if_player_won ? puts('You won!') : puts('You ran out of torpedoes and lost.')
         else
             puts 'You quit the game'
         end
     end
+
+    def play
+        result_of_turn = "#{self.num_torpedoes} torpedoes left"
+        until self.complete
+            system ('clear')
+            display_board
+            puts result_of_turn
+            user_input = play_or_quit
+            user_input == 'a' ? (result_of_turn = aim_and_fire_torpedo) : break
+            update_completed_status
+        end
+        results
+        return complete
+    end
+
 end

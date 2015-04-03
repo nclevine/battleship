@@ -102,27 +102,30 @@ difficulties = {1 => :baby, 2 => :easy, 3 => :normal, 4 => :hard, 5 => :impossib
 # end
 
 # begin UI
-system ('clear')
 loop do
+    system ('clear')
     display_main_menu
     user_input = get_valid_menu_choice(4)
     if user_input == 1 # Choose Player
+        system ('clear')
         display_existing_players
         user_input = get_valid_menu_choice(Player.all.length + 1)
         # if user_input == Player.all.length + 1
         #     break
         # else
         if (1..Player.all.length).include?(user_input)
+            system ('clear')
             player = Player.all[user_input - 1]
             player.display_games_menu
             user_input = get_valid_menu_choice(4)
             if user_input == 1 # New Game
+                system ('clear')
                 display_new_game_menu
                 user_input = get_valid_menu_choice(5)
                 game = player.start_new_single_player_game(difficulties[user_input])
                 game.play
-                game.results
             elsif user_input == 2 # Load Save Game
+                system ('clear')
                 incomplete_games = player.display_saved_games
                 user_input = get_valid_menu_choice(incomplete_games.length + 1)
                 # if user_input == incomplete_games.length + 1
@@ -131,9 +134,9 @@ loop do
                 if (1..incomplete_games.length).include?(user_input)
                     game = incomplete_games[user_input - 1]
                     game.play
-                    game.results
                 end
             elsif user_input == 3 # View Past Games
+                system ('clear')
                 completed_games = player.display_completed_games
                 user_input = get_valid_menu_choice(completed_games.length + 1)
                 # if user_input == completed_games.length + 1
@@ -148,9 +151,11 @@ loop do
             end
         end
     elsif user_input == 2 # New Player
+        system ('clear')
         new_player = make_new_player
         puts("#{new_player} created!")
     elsif user_input == 3 # Delete Player
+        system ('clear')
         display_existing_players
         user_input = get_valid_menu_choice(Player.all.length + 1)
         # if user_input == Player.all.length + 1
