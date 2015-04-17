@@ -16,6 +16,10 @@ class Game < ActiveRecord::Base
         to_str
     end
 
+    # idiomatic ruby style is to include parenthesis in method definitions, i.e.
+    # def build_ships(difficulty)
+    # but to not include them when calling methods, unless they remove
+    # ambiguity.
     def build_ships difficulty
         built_ships = []
         ship_names = DIFFICULTY_SETTINGS[difficulty][:ship_array]
@@ -27,15 +31,27 @@ class Game < ActiveRecord::Base
 
     def build_ocean difficulty
         ocean_attrs = OCEANS_OF_THE_WORLD[DIFFICULTY_SETTINGS[difficulty][:region]]
+
+        # the next three lines can be shortened to 1:
+        # new_ocean = self.create_ocean(ocean_attrs)
         new_ocean = Ocean.new(ocean_attrs)
         new_ocean.game = self
         new_ocean.save
+
+        # if all new oceans need to be populated with cells, you can add an
+        # `after_create` callback on the ocean to ensure that cells are
+        # populated
         new_ocean.populate_with_cells
+
         built_ships = build_ships(difficulty)
+
+        # This should probably happen in the `build_ships` method unless I'm
+        # missing something.
         built_ships.each do |ship|
             ship.ocean = new_ocean
             ship.save
         end
+
         new_ocean.arrange_ships
         self.num_torpedoes = DIFFICULTY_SETTINGS[difficulty][:torpedoes]
         self.save
@@ -52,6 +68,9 @@ class Game < ActiveRecord::Base
     end
 
     def fire_torpedo target_cell
+        # I feel like you should have a 'hit!' method on the cell class
+        # that updates the hit attribute and saves the cell. that way
+        # you don't have to worry about saving it here.
         target_cell.hit = true
         target_cell.save
         self.num_torpedoes -= 1
@@ -60,6 +79,9 @@ class Game < ActiveRecord::Base
     end
 
     def aim_and_fire_torpedo
+      # generally we should aim to keep methods under 10 lines or so. I'd try
+      # to break this method down into 2 or 3 smaller methods which you call
+      # from here.
         hit_a_cell = false
         until hit_a_cell
             puts 'Aim torpedo at which cell? (format "column#,row#")'
@@ -92,6 +114,10 @@ class Game < ActiveRecord::Base
         return result_string
     end
 
+    # it smells a bit to me that you have to remember here to update each ship's
+    # sunk status. I think rather than having to do this, just define a method
+    # on the ship class called `sunk?` which returns true or false.
+    # (see comment on ship class and the next method)
     def update_ships_sunk_status
         ocean.ships.each { |ship| ship.update_sunk_status }
         sunk_ships = ocean.ships.where(sunk: true)
@@ -99,8 +125,13 @@ class Game < ActiveRecord::Base
     end
 
     def update_completed_status
+      # if you have a `sunk?` method, you can simplify this code to:
+      # sunk_ships = ocean.ships.select{|s| s.sunk?}.count
+      # you could even extract this one line into a method like num_sunk_ships
         sunk_ships = update_ships_sunk_status
         if self.num_torpedoes == 0 || sunk_ships == ocean.ships.length
+        # if you use .update for both lines below, you shouldn't need to
+        # do self.save
             self.update(complete: true)
             self.completed_at = Time.now
         end

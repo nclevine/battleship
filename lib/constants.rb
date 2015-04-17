@@ -1,5 +1,13 @@
 # require 'pry'
 
+# I really like how you definied these constants in a dedicated file.
+# It makes your main code much easier to read.
+
+# That said, some of these constants are only used in one class. Thus, it might
+# make sense to define those as constants in the appropriate class.
+
+# For example, the next three constants are only used in game.rb, so I'd move them
+# as constants defined in the class.
 DIFFICULTY_SETTINGS = {
     impossible: {region: :pacific, torpedoes: 70, ship_array: [:aircraft_carrier, :aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :battleship, :battleship, :submarine, :submarine, :cruiser, :cruiser, :destroyer]},
     hard: {region: :atlantic, torpedoes: 55, ship_array: [:aircraft_carrier, :aircraft_carrier, :battleship, :battleship, :submarine, :submarine, :cruiser, :destroyer, :destroyer]},
@@ -24,11 +32,11 @@ OCEANS_OF_THE_WORLD = {
     arctic: {name: 'Arctic Ocean', width: 6, height: 6}
 }
 
-LOGO = '  ____    _  _____ _____ _     _____ ____  _   _ ___ ____  
- | __ )  / \|_   _|_   _| |   | ____/ ___|| | | |_ _|  _ \ 
+LOGO = '  ____    _  _____ _____ _     _____ ____  _   _ ___ ____
+ | __ )  / \|_   _|_   _| |   | ____/ ___|| | | |_ _|  _ \
  |  _ \ / _ \ | |   | | | |   |  _| \___ \| |_| || || |_) |
- | |_) / ___ \| |   | | | |___| |___ ___) |  _  || ||  __/ 
- |____/_/   \_\_|   |_| |_____|_____|____/|_| |_|___|_|    
+ | |_) / ___ \| |   | | | |___| |___ ___) |  _  || ||  __/
+ |____/_/   \_\_|   |_| |_____|_____|____/|_| |_|___|_|
                                                            '
 
 MENU_BORDER = '------------------------------'.center(60, " ")
