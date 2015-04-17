@@ -2,6 +2,17 @@ class Ship < ActiveRecord::Base
     has_many :cells
     belongs_to :ocean
 
+
+    # I'd define a method like
+    # def sunk?
+    #   cells.where(hit: true) == self.length
+    # end
+
+    # in other words, there's no need to save the 'sunk' status to the DB, since
+    # all the data is already there in the cells.
+    # if performance were an issue, you might cache this value, but the method
+    # above could reduce complexity in your ocean / game classes.
+
     def to_str
         name
     end
@@ -11,7 +22,7 @@ class Ship < ActiveRecord::Base
     end
 
     def insert_into_empty_cells empty_cells
-        empty_cells.each do |cell| 
+        empty_cells.each do |cell|
             cell.ship = self
             cell.save
         end
